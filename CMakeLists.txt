@@ -11,10 +11,10 @@ set (EXE_NAME SentimentAnalyzer)
 #   set (input02 "train_target.csv")
 # etc....
 
-set (input01 "")
-set (input02 "")
-set (input03 "")
-set (input04 "")
+set (input01 "dev-train-data.csv")
+set (input02 "dev-train-target.csv")
+set (input03 "dev-test-data.csv")
+set (input04 "dev-test-target.csv")
 
 #
 ##########################################
@@ -25,4 +25,4 @@ foreach(file IN LISTS input01 input02 input03 input04)
 endforeach()
 
 set(CMAKE_CXX_STANDARD 17)
-add_executable(${EXE_NAME} main.cpp)
+add_executable(${EXE_NAME} main.cpp training.cpp tweet.cpp DSString.cpp)
