@@ -19,22 +19,22 @@ class DSString {
 
         bool operator< (const DSString&) const;
 
+        void filter(DSString filter);
 
         bool operator == (const DSString &);
         friend std::ostream & operator << (std::ostream &out, const DSString &c); 
+        
         int length();
-
         bool isASCII();
-
-        //Get int representation
-        int atoi();
+        int atoi(); //Get int representation
 
         bool includes(const DSString &);
 
-        std::vector<DSString> split(char);
+        void toLower();
+
+        std::vector<DSString*> split(char);
         DSString substring(int, int);
 
-        DSString lower();
 
     private:
         void init(const char *);

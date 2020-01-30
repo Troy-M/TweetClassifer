@@ -16,7 +16,7 @@ void DSString::init(const char * input){
 }
 
 DSString::DSString(){
-    data = 0;
+    data = nullptr;
 }
 
 DSString::~DSString(){
@@ -79,20 +79,20 @@ std::ostream & operator << (std::ostream &out, const DSString &c){
 } 
 
 bool DSString::operator < (const DSString& other) const {
-    return strcmp(data, other.data) < 0;
+    return strcmp(data, other.data) > 0;
 };
 
 int DSString::length(){
     return strlen(data);
 }
 
-std::vector<DSString> DSString::split(char find){
-    std::vector<DSString> output;
+std::vector<DSString*> DSString::split(char find){
+    std::vector<DSString*> output;
 
     int start = 0;
     char * occur = strchr(data, find);
-    while(occur != NULL){
-        DSString sub = substring(start, occur-data);
+    while(occur != nullptr){
+        DSString * sub = new DSString(substring(start, occur-data));
         output.push_back(sub);
 
         start = occur-data+1;
@@ -100,7 +100,7 @@ std::vector<DSString> DSString::split(char find){
     }
     
     //Final substring
-    DSString sub = substring(start, strlen(data));
+    DSString * sub = new DSString(substring(start, strlen(data)));
     output.push_back(sub);
 
     return output;
@@ -122,19 +122,10 @@ DSString DSString::substring(int start, int end){
     return output;
 };
 
-DSString DSString::lower(){
-    char * tmp = new char[length()];
-
+void DSString::toLower(){
     for(int i = 0; i < length(); i++){
-        tmp[i] = tolower(data[i]);
+        data[i] = tolower(data[i]);
     }
-
-    tmp[length()] = '\0';
-
-    DSString output = tmp;
-    delete [] tmp;
-
-    return output;
 }
 
 bool DSString::isASCII(){
@@ -142,13 +133,40 @@ bool DSString::isASCII(){
         int check = static_cast<int>(data[i]); 
         if(check > 127 || check < 0){
             return false;
-        } else {
-            cout << data[i] << " " << check << endl;
         }
     }
     return true;
 }
 
+void DSString::filter(DSString filter){
+    DSString output = "";
+
+    //This is the first occur
+    char * occur = strstr(data, filter.data);
+
+    if(occur == nullptr){
+        return;
+    }
+
+    int start = occur - data;
+    int end = start+filter.length();
+
+    output = substring(0, start) + substring(end, length());
+    occur = strstr(output.data, filter.data);
+
+    while(occur != nullptr){
+        int start = occur - output.data;
+        int end = start+filter.length();
+
+        output = output.substring(0, start) + substring(end, output.length());
+
+        occur = strstr(output.data, filter.data);
+    }
+
+    delete [] data;
+    init(output.data);
+}
+    
 bool DSString::includes(const DSString & other){
     char * output = strstr(data, other.data);
 
