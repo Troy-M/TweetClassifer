@@ -56,7 +56,7 @@ vector<Tweet*> * load_pairs(string data, string target){
     return output;
 }
 
-void gen_dict(vector<Tweet*> * data){
+WordCounts * gen_dict(vector<Tweet*> * data){
     //word -> (positive count, negative count)
     auto * word_counts = new WordCounts();
 
@@ -106,7 +106,6 @@ void gen_dict(vector<Tweet*> * data){
             word->filter("("); 
             word->filter("'");
 
-
             //Filter out one letter words
             //These are largely numbers
             if(word->length() == 1){
@@ -118,13 +117,14 @@ void gen_dict(vector<Tweet*> * data){
         }
     }
 
-    word_counts->Print();
+    //word_counts->Print();
 
-    //return word_counts;
+    return word_counts;
 }
 
 void run_training(vector<Tweet*> * data){
-    gen_dict(data);
+    WordCounts * words = gen_dict(data);
+    words->Sort();
 }
 
 //Main entry loop from main

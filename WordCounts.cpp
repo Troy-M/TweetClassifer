@@ -1,6 +1,7 @@
 #include "WordCounts.h"
 #include "DSString.h"
 #include<vector>
+#include <numeric>
 using namespace std;
 
 WordCounts::WordCounts(){
@@ -31,5 +32,27 @@ void WordCounts::AddWord(DSString * word, bool positive){
 void WordCounts::Print(){
     for(int i = 0; i < words.size(); i++){
         cout << *words[i] << " " << pos[i] << " " << neg[i] << endl;
+    }
+}
+
+void WordCounts::Sort() {
+
+    //Generate a new vector the same size as words
+    //Fill it with the numbers between 0 and words.size()
+    //Sort these indices based on pos + neg 
+    std::vector<int> y(words.size());
+    std::iota(y.begin(), y.end(), 0);
+
+    auto comparator = [&](int a, int b){ return pos[a]+neg[a] > pos[b]+neg[b]; };
+    std::sort(y.begin(), y.end(), comparator);
+
+    int i = 0;
+    for(auto v : y){
+        cout << *words[v] << " " << pos[v] << " " << neg[v] << endl;
+        i++;
+
+        if(i > 50){
+            return;
+        }
     }
 }

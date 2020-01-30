@@ -82,11 +82,11 @@ bool DSString::operator < (const DSString& other) const {
     return strcmp(data, other.data) > 0;
 };
 
-int DSString::length(){
+int DSString::length() const{
     return strlen(data);
 }
 
-std::vector<DSString*> DSString::split(char find){
+std::vector<DSString*> DSString::split(char find) const {
     std::vector<DSString*> output;
 
     int start = 0;
@@ -106,7 +106,7 @@ std::vector<DSString*> DSString::split(char find){
     return output;
 };
 
-DSString DSString::substring(int start, int end){
+DSString DSString::substring(int start, int end) const {
     //Technically the biggest the substring could be is the entire string
     char * tmp = new char[length()];
 
@@ -128,7 +128,7 @@ void DSString::toLower(){
     }
 }
 
-bool DSString::isASCII(){
+bool DSString::isASCII() const{
     for(int i = 0; i < length()-1; i++){
         int check = static_cast<int>(data[i]); 
         if(check > 127 || check < 0){
@@ -167,12 +167,12 @@ void DSString::filter(DSString filter){
     init(output.data);
 }
     
-bool DSString::includes(const DSString & other){
+bool DSString::includes(const DSString & other) const {
     char * output = strstr(data, other.data);
 
     return output != nullptr;
 };
 
-int DSString::atoi(){
+int DSString::atoi() const{
     return std::atoi(data);
 }

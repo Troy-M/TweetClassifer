@@ -17,24 +17,28 @@ class DSString {
         DSString & operator = (const char *);
         DSString   operator + (const DSString &);
 
+        //Used for std::map
         bool operator< (const DSString&) const;
 
+        bool operator == (const DSString &);
+
+        //std::cout overload
+        friend std::ostream & operator << (std::ostream &out, const DSString &c);
+
+        //Remove a given phrase in string
         void filter(DSString filter);
 
-        bool operator == (const DSString &);
-        friend std::ostream & operator << (std::ostream &out, const DSString &c); 
-        
-        int length();
-        bool isASCII();
-        int atoi(); //Get int representation
-
-        bool includes(const DSString &);
-
+        //Change string to lower case
         void toLower();
 
-        std::vector<DSString*> split(char);
-        DSString substring(int, int);
 
+        std::vector<DSString*> split(char) const;
+        DSString substring(int, int) const;
+
+        bool isASCII() const;
+        bool includes(const DSString &) const;
+        int atoi() const; //Get int representation
+        int length() const;
 
     private:
         void init(const char *);

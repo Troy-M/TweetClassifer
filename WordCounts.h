@@ -13,6 +13,7 @@ class WordCounts {
         void AddWord(DSString *, bool positive);
 
         void Print();
+        void Sort();
 
 
     private:
