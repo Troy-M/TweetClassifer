@@ -25,4 +25,4 @@ foreach(file IN LISTS input01 input02 input03 input04)
 endforeach()
 
 set(CMAKE_CXX_STANDARD 17)
-add_executable(${EXE_NAME} main.cpp training.cpp tweet.cpp DSString.cpp)
+add_executable(${EXE_NAME} main.cpp training.cpp tweet.cpp DSString.cpp WordCounts.cpp)

@@ -62,7 +62,7 @@ void gen_dict(vector<Tweet*> * data){
 
     //Loop through every tweet, split it into words
     //Update map based on classification
-    for(int i = 0; i < 5000; i++){
+    for(int i = 0; i < data->size(); i++){
         Tweet * tweet = data->at(i);
         vector<DSString*> parts = tweet->GetText()->split(' ');
 

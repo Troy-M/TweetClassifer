@@ -3,6 +3,7 @@
 
 #include "DSString.h"
 #include<vector>
+#include<map>
 
 class WordCounts {
 
@@ -15,6 +16,7 @@ class WordCounts {
 
 
     private:
+        std::map<DSString, int> indices;
         std::vector<DSString*> words;
         std::vector<int> pos;
         std::vector<int> neg;

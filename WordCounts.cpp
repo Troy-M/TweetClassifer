@@ -7,22 +7,24 @@ WordCounts::WordCounts(){
     pos = vector<int>();
     neg = vector<int>();
     words = vector<DSString*>();
+    indices = std::map<DSString, int>();
+
 }
 
 void WordCounts::AddWord(DSString * word, bool positive){
-    bool found = false;
-    for(int i = 0; i < words.size() && !found; i++){
-        if(*words[i] == *word){
-            pos[i] += positive;
-            neg[i] += !positive;
-            found = true;
-        }
-    }
+    try {
+        int index = indices.at(*word);
+        pos[index] += positive;
+        neg[index] += !positive;
 
-    if(!found){
+    } catch(std::out_of_range){
+        
         words.push_back(word);
         pos.push_back(positive);
         neg.push_back(!positive);
+
+        pair<DSString, int> cache(*word, words.size()-1);
+        indices.insert(cache);
     }
 }
 
