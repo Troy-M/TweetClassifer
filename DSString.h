@@ -40,6 +40,8 @@ class DSString {
         int atoi() const; //Get int representation
         int length() const;
 
+        char * c_str() const;
+
     private:
         void init(const char *);
 

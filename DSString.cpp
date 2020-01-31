@@ -173,6 +173,10 @@ bool DSString::includes(const DSString & other) const {
     return output != nullptr;
 };
 
-int DSString::atoi() const{
+int DSString::atoi() const {
     return std::atoi(data);
 }
+
+char * DSString::c_str() const {
+    return data;
+}   

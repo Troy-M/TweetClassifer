@@ -1,9 +1,8 @@
 #ifndef TRAINING_H
 #define TRAINING_H
 
-#include <iostream> 
-using namespace std;
+#include "DSString.h" 
 
-void create_algo(string train_data, string train_target, string test_data, string test_target, string output);
+void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output);
 
 #endif

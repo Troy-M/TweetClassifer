@@ -5,22 +5,23 @@
 #include <vector>
 #include <map>
 #include "WordCounts.h"
+#include <iomanip>
 
 using namespace std;
 
-vector<Tweet*> * load_pairs(string data, string target){
+vector<Tweet*> * load_pairs(DSString data, DSString target, int limit){
     //Step one load the training data
     vector<Tweet*> * output = new vector<Tweet*>;
 
     string line;
-    ifstream raw_tweets(data);
+    ifstream raw_tweets(data.c_str());
     if (raw_tweets.is_open()){
         //CSV header, ignore        
         getline(raw_tweets, line);
 
         //TODO: Remove to train against entire dataset
         int i = 0;
-        while (getline(raw_tweets, line) && i < 5000000){
+        while (getline(raw_tweets, line) && i < limit){
             DSString str = line.c_str(); 
             vector<DSString*> parts = str.split(',');
 
@@ -32,7 +33,7 @@ vector<Tweet*> * load_pairs(string data, string target){
                 *text = *text + *parts[i];
             }
 
-            Tweet * tweet = new Tweet(parts[3], parts[2], parts[1]->atoi());
+            Tweet * tweet = new Tweet(parts[3], parts[2], parts[1]);
             output->push_back(tweet);
 
             i++;
@@ -40,7 +41,7 @@ vector<Tweet*> * load_pairs(string data, string target){
         raw_tweets.close();
     }
 
-    ifstream raw_target(target);
+    ifstream raw_target(target.c_str());
     if (raw_target.is_open()){
         //CSV header, ignore        
         getline(raw_target, line);
@@ -48,7 +49,7 @@ vector<Tweet*> * load_pairs(string data, string target){
         int index = 0;
 
         //We assume that data and target files include the same tweets
-        while (getline(raw_target, line) && index < 5000000){
+        while (getline(raw_target, line) && index < limit){
             DSString str = line.c_str(); 
             vector<DSString*> parts = str.split(',');
 
@@ -105,7 +106,7 @@ bool filter_tweet(DSString * word){
 
 
     //Words that are common
-    word->filter("a");
+    /* word->filter("a");
     word->filter("an");
     word->filter("the");
     word->filter("to");
@@ -114,7 +115,9 @@ bool filter_tweet(DSString * word){
     word->filter("then");
     word->filter("is");
     word->filter("are");
-
+    word->filter("then");
+    word->filter("or");
+    word->filter("and"); */
 
 
     //Filter out one letter words
@@ -164,7 +167,20 @@ WordCounts * run_training(vector<Tweet*> * data){
     return words;
 }
 
-void run_inference(WordCounts * weights, vector<Tweet*> * data){
+void write_errors(vector<Tweet *> tweets, float acc, DSString path){
+    ofstream output(path.c_str());
+
+    output << setprecision(3) << fixed << endl;
+    output << acc << endl;
+    
+    for(int i = 0; i < tweets.size(); i++){
+        output << *tweets[i]->GetID() << endl;
+    }
+}
+
+void run_inference(WordCounts * weights, vector<Tweet*> * data, DSString output){
+    auto errors = vector<Tweet*>();
+
     int right = 0;
     int wrong = 0;
     for(int i = 0; i < data->size(); i++){
@@ -175,7 +191,6 @@ void run_inference(WordCounts * weights, vector<Tweet*> * data){
         auto scores = vector<float>();
 
         vector<DSString*> parts = tweet->GetText()->split(' ');
-
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
@@ -192,35 +207,39 @@ void run_inference(WordCounts * weights, vector<Tweet*> * data){
         prediction *= 4;
 
         if(tweet->GetClassification() != prediction){
-            //cout << "Wrong predicition, correct score: " << tweet->GetClassification() << " score: " << score << " Tweet: " << *tweet->GetText() <<  endl << " \t\t Breakdown: [";
+            /*cout << "Wrong predicition, correct score: " << tweet->GetClassification() << " score: " << score << " Tweet: " << *tweet->GetText() <<  endl << " \t\t Breakdown: [";
 
             for(int i = 0; i < scores.size(); i++){
-                cout << scores[i] << ',';
+               cout << scores[i] << ',';
             }
+            cout << ']' << endl; */
 
-            cout << ']' << endl;
-
+            errors.push_back(tweet);
             wrong++;
         } else {
             right++;            
         }
     }
     
+
+    float accuracy = (float)right / (right+wrong);
     cout << "Correct: " << right << endl;
     cout << "Incorrect: " << wrong << endl;
     cout << "Total: " << right + wrong << endl;
-    cout << "Accuracy: " << (float)right / (right+wrong) << endl;
+    cout << "Accuracy: " << accuracy << endl;
+
+    write_errors(errors, accuracy, output);
 }
 
 //Main entry loop from main
 //Load data, train algo, test algo, write output
-void create_algo(string train_data, string train_target, string test_data, string test_target, string output)
+void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
 {
-    vector<Tweet*> * training = load_pairs(train_data, train_target);
+    vector<Tweet*> * training = load_pairs(train_data, train_target, 50000);
 
     cout << "Done loading training data. " << training->size() << " loaded" << endl;
     
-    vector<Tweet*> * testing = load_pairs(test_data, test_target);
+    vector<Tweet*> * testing = load_pairs(test_data, test_target, 2000000);
 
     cout << "Done loading testing data. " << testing->size() << " loaded" << endl;
 
@@ -230,5 +249,6 @@ void create_algo(string train_data, string train_target, string test_data, strin
     //run_inference(weights, training);
 
     cout << "Test against testing data" << endl;
-    run_inference(weights, testing);
+
+    run_inference(weights, testing, output);
 }

@@ -7,11 +7,11 @@ class Tweet {
     public:
         //No reason we would want to change these later
         //Or why we dont know them at creation
-        Tweet(DSString * text, DSString * user, int id);
-        Tweet(DSString * text, DSString * user, int id, int classification);
+        Tweet(DSString * text, DSString * user, DSString * id);
+        Tweet(DSString * text, DSString * user, DSString * id, int classification);
 
         DSString * GetText();
-        int GetID();
+        DSString * GetID();
         DSString * GetUser();
         
         int GetClassification();
@@ -22,7 +22,7 @@ class Tweet {
 
     private:
         DSString * text;
-        int id;
+        DSString * id;
         DSString * user;
         int classification;
 };

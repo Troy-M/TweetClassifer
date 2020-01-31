@@ -1,12 +1,12 @@
 #include "tweet.h"
 
-Tweet::Tweet(DSString * text, DSString * user, int id){
+Tweet::Tweet(DSString * text, DSString * user, DSString * id){
     this->text = text;
     this->id = id;
     this->user = user;
 }
 
-Tweet::Tweet(DSString * text, DSString * user, int id, int classification){
+Tweet::Tweet(DSString * text, DSString * user, DSString * id, int classification){
     this->text = text;
     this->id = id;
     this->user = user;
@@ -17,7 +17,7 @@ DSString * Tweet::GetText(){
     return text;
 }
 
-int Tweet::GetID(){
+DSString * Tweet::GetID(){
     return id;
 }
 
