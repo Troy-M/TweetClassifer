@@ -1,7 +1,8 @@
 #include "WordCounts.h"
 #include "DSString.h"
-#include<vector>
+#include <vector>
 #include <numeric>
+#include <algorithm>
 using namespace std;
 
 WordCounts::WordCounts(){
@@ -9,7 +10,7 @@ WordCounts::WordCounts(){
     neg = vector<int>();
     words = vector<DSString*>();
     indices = std::map<DSString, int>();
-
+    scores = vector<float>();
 }
 
 void WordCounts::AddWord(DSString * word, bool positive){
@@ -23,36 +24,68 @@ void WordCounts::AddWord(DSString * word, bool positive){
         words.push_back(word);
         pos.push_back(positive);
         neg.push_back(!positive);
+        scores.push_back(0);
 
         pair<DSString, int> cache(*word, words.size()-1);
         indices.insert(cache);
     }
 }
 
-void WordCounts::Print(){
-    for(int i = 0; i < words.size(); i++){
-        cout << *words[i] << " " << pos[i] << " " << neg[i] << endl;
-    }
+int WordCounts::Size() const {
+    return words.size();
 }
-
-void WordCounts::Sort() {
-
-    //Generate a new vector the same size as words
-    //Fill it with the numbers between 0 and words.size()
-    //Sort these indices based on pos + neg 
+/*
+void WordCounts::GenScores(){
+    //Sort these indices based on condition
     std::vector<int> y(words.size());
     std::iota(y.begin(), y.end(), 0);
 
-    auto comparator = [&](int a, int b){ return pos[a]+neg[a] > pos[b]+neg[b]; };
+    auto comparator = [&](int a, int b){ 
+        return GetScore(a) > GetScore(b); 
+    };
+
     std::sort(y.begin(), y.end(), comparator);
 
-    int i = 0;
-    for(auto v : y){
-        cout << *words[v] << " " << pos[v] << " " << neg[v] << endl;
-        i++;
+    auto output = vector<pair<DSString*, float> >();
 
-        if(i > 50){
-            return;
-        }
+    for(auto v : y){
+        pair<DSString*, float> item(words[v], GetScore(v));
+        
+        output.push_back(item);
     }
+}; */
+
+void WordCounts::GenScores(){
+    for(int i = 0; i < words.size(); i++){
+        scores[i] = GenScore(i);
+    }
+};
+
+float WordCounts::GetScore(DSString * word){
+    try {
+
+        int index = indices.at(*word);
+        return scores[index];
+
+    } catch(std::out_of_range){
+
+        return 0;
+
+    }
+}
+
+float WordCounts::GenScore(int index){
+    //Get the percentage of times it is used in a postive context
+    float ratio_score = (float)(pos[index] - neg[index]) / (pos[index] + neg[index]);
+
+    //if(neg[index] - pos[index]){
+    //    ratio_score *= 1;
+    //}
+
+
+    if(ratio_score == 1 || ratio_score == -1){
+        return 0;
+    }
+
+    return ratio_score;
 }
