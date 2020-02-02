@@ -9,9 +9,9 @@
 
 using namespace std;
 
-vector<Tweet*> * load_pairs(DSString data, DSString target, int limit){
+vector<Tweet*> load_pairs(DSString data, DSString target, int limit){
     //Step one load the training data
-    vector<Tweet*> * output = new vector<Tweet*>;
+    auto output = vector<Tweet*>();
 
     string line;
     ifstream raw_tweets(data.c_str());
@@ -34,7 +34,7 @@ vector<Tweet*> * load_pairs(DSString data, DSString target, int limit){
             }
 
             Tweet * tweet = new Tweet(parts[3], parts[2], parts[1]);
-            output->push_back(tweet);
+            output.push_back(tweet);
 
             i++;
         }
@@ -54,7 +54,7 @@ vector<Tweet*> * load_pairs(DSString data, DSString target, int limit){
             vector<DSString*> parts = str.split(',');
 
             int classification = parts[1]->atoi();
-            output->at(index)->SetClassification(classification);
+            output.at(index)->SetClassification(classification);
             index += 1;
         }
 
@@ -77,12 +77,7 @@ bool filter_tweet(DSString * word){
         return false;
     }
 
-    //These may be at the end of the word and we want seperated from the word
-    //They must be checked here because they arent alphabetical
-    //This is a while becuase of .... or ???
-    while(word->includes("?") || word->includes(".") || word->includes("!")){
-        *word = word->substring(0, word->length()-1);                
-    }
+
 
     //There is a chance our word only was endings
     if(*word == ""){
@@ -103,8 +98,10 @@ bool filter_tweet(DSString * word){
     word->filter("("); 
     word->filter("'");
     word->filter("=");
-
-
+    word->filter("?");
+    word->filter(".");
+    word->filter("!");
+    
     //Words that are common
     /* word->filter("a");
     word->filter("an");
@@ -129,15 +126,27 @@ bool filter_tweet(DSString * word){
     return true;
 }
 
-WordCounts * gen_dict(vector<Tweet*> * data){
+void check_biagram(DSString * word, DSString * next_word){
+    if(*word == "not"){
+        *word = *word + " " + *next_word; 
+    } 
+
+    if(*word == "very"){
+        *word = *word + " " + *next_word; 
+    } 
+}
+
+WordCounts  gen_dict(vector<Tweet*> data){
     //word -> (positive count, negative count)
-    auto * word_counts = new WordCounts();
+    WordCounts word_counts =  WordCounts();
 
     //Loop through every tweet, split it into words
     //Update word count
-    for(int i = 0; i < data->size(); i++){
-        Tweet * tweet = data->at(i);
+    for(int i = 0; i < data.size(); i++){
+        Tweet * tweet = data.at(i);
         vector<DSString*> parts = tweet->GetText()->split(' ');
+
+        word_counts.AddWord(tweet->GetUser(), tweet->GetClassification());
 
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
@@ -146,11 +155,15 @@ WordCounts * gen_dict(vector<Tweet*> * data){
                 continue;
             };
 
-            word_counts->AddWord(word, tweet->GetClassification());
+            if(j+1 < parts.size()){
+                check_biagram(word, parts[j+1]);
+            }
+            
+            word_counts.AddWord(word, tweet->GetClassification());
         }
 
         if(i % 30000 == 0){ 
-            float percent_done = (float)i / data->size() * 100;
+            float percent_done = (float)i / data.size() * 100;
             cout << "Trained on " << i << " tweets. Progress: " << int(percent_done) << "%" << endl;
         }
     }
@@ -158,11 +171,11 @@ WordCounts * gen_dict(vector<Tweet*> * data){
     return word_counts;
 }
 
-WordCounts * run_training(vector<Tweet*> * data){
-    WordCounts * words = gen_dict(data);
-    words->GenScores();
+WordCounts run_training(vector<Tweet*> data){
+    WordCounts words = gen_dict(data);
+    words.GenScores();
 
-    cout << "Ran training on " << words->Size() << " words" << endl;
+    cout << "Ran training on " << words.Size() << " words" << endl;
 
     return words;
 }
@@ -178,17 +191,28 @@ void write_errors(vector<Tweet *> tweets, float acc, DSString path){
     }
 }
 
-void run_inference(WordCounts * weights, vector<Tweet*> * data, DSString output){
+void run_inference(WordCounts weights, vector<Tweet*> data, DSString output){
     auto errors = vector<Tweet*>();
 
     int right = 0;
     int wrong = 0;
-    for(int i = 0; i < data->size(); i++){
-        Tweet * tweet = data->at(i);
+
+    int right_pos = 0;
+    int wrong_pos = 0;
+    
+    int right_neg = 0;
+    int wrong_neg = 0;
+
+    for(int i = 0; i < data.size(); i++){
+        Tweet * tweet = data.at(i);
 
         float score = 0;
 
         auto scores = vector<float>();
+
+        //Consider the score of the user
+        score += weights.GetScore(tweet->GetUser());
+        scores.push_back(score);
 
         vector<DSString*> parts = tweet->GetText()->split(' ');
         for(int j = 0; j < parts.size(); j++){
@@ -198,26 +222,33 @@ void run_inference(WordCounts * weights, vector<Tweet*> * data, DSString output)
                 continue;
             };
 
-            score += weights->GetScore(word);
+            if(j+1 < parts.size()){
+                check_biagram(word, parts[j+1]);
+            }
 
-            scores.push_back(score);
+            score += weights.GetScore(word);
+            scores.push_back(weights.GetScore(word));
         }
 
-        int prediction = (score / parts.size()) > 0;
+        int prediction = (score / (scores.size()+1)) > -.03;
         prediction *= 4;
 
         if(tweet->GetClassification() != prediction){
-            /*cout << "Wrong predicition, correct score: " << tweet->GetClassification() << " score: " << score << " Tweet: " << *tweet->GetText() <<  endl << " \t\t Breakdown: [";
-
-            for(int i = 0; i < scores.size(); i++){
-               cout << scores[i] << ',';
-            }
-            cout << ']' << endl; */
-
             errors.push_back(tweet);
             wrong++;
+
+            if(prediction == 4){
+                wrong_pos++;
+            } else {
+                wrong_neg++;
+            }
         } else {
-            right++;            
+            right++;
+            if(prediction == 4){
+                right_pos++;
+            } else {
+                right_neg++;
+            }
         }
     }
     
@@ -227,6 +258,8 @@ void run_inference(WordCounts * weights, vector<Tweet*> * data, DSString output)
     cout << "Incorrect: " << wrong << endl;
     cout << "Total: " << right + wrong << endl;
     cout << "Accuracy: " << accuracy << endl;
+    cout << "Positve stats: " << right_pos << " " << wrong_pos << " " << (float)right_pos/(right_pos+wrong_pos) << endl;
+    cout << "Neg stats: " << right_neg << " " << wrong_neg << " " << (float)right_neg/(right_neg+wrong_neg) << endl;
 
     write_errors(errors, accuracy, output);
 }
@@ -235,15 +268,15 @@ void run_inference(WordCounts * weights, vector<Tweet*> * data, DSString output)
 //Load data, train algo, test algo, write output
 void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
 {
-    vector<Tweet*> * training = load_pairs(train_data, train_target, 50000);
+    vector<Tweet*> training = load_pairs(train_data, train_target, 5000000);
 
-    cout << "Done loading training data. " << training->size() << " loaded" << endl;
+    cout << "Done loading training data. " << training.size() << " loaded" << endl;
     
-    vector<Tweet*> * testing = load_pairs(test_data, test_target, 2000000);
+    vector<Tweet*> testing = load_pairs(test_data, test_target, 20000000);
 
-    cout << "Done loading testing data. " << testing->size() << " loaded" << endl;
+    cout << "Done loading testing data. " << testing.size() << " loaded" << endl;
 
-    WordCounts * weights = run_training(training);
+    WordCounts weights = run_training(training);
 
     //cout << "Test against training data" << endl;
     //run_inference(weights, training);
