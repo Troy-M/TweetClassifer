@@ -11,16 +11,16 @@ class WordCounts {
     public:
         WordCounts();
 
-        void AddWord(DSString *, bool positive);
+        void AddWord(DSString, bool positive);
 
-        float GetScore(DSString *);
+        float GetScore(DSString);
         void GenScores();
 
         int Size() const;
 
     private:
         std::map<DSString, int> indices;
-        std::vector<DSString*> words;
+        std::vector<DSString> words;
         std::vector<int> pos;
         std::vector<int> neg;
         std::vector<float> scores;

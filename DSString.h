@@ -20,7 +20,7 @@ class DSString {
         //Used for std::map
         bool operator< (const DSString&) const;
 
-        bool operator == (const DSString &);
+        bool operator == (const DSString &) const;
 
         //std::cout overload
         friend std::ostream & operator << (std::ostream &out, const DSString &c);

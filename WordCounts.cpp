@@ -8,14 +8,14 @@ using namespace std;
 WordCounts::WordCounts(){
     pos = vector<int>();
     neg = vector<int>();
-    words = vector<DSString*>();
+    words = vector<DSString>();
     indices = std::map<DSString, int>();
     scores = vector<float>();
 }
 
-void WordCounts::AddWord(DSString * word, bool positive){
+void WordCounts::AddWord(DSString word, bool positive){
     try {
-        int index = indices.at(*word);
+        int index = indices.at(word);
         pos[index] += positive;
         neg[index] += !positive;
 
@@ -26,7 +26,7 @@ void WordCounts::AddWord(DSString * word, bool positive){
         neg.push_back(!positive);
         scores.push_back(0);
 
-        pair<DSString, int> cache(*word, words.size()-1);
+        pair<DSString, int> cache(word, words.size()-1);
         indices.insert(cache);
     }
 }
@@ -61,10 +61,10 @@ void WordCounts::GenScores(){
     }
 };
 
-float WordCounts::GetScore(DSString * word){
+float WordCounts::GetScore(DSString word){
     try {
 
-        int index = indices.at(*word);
+        int index = indices.at(word);
         return scores[index];
 
     } catch(std::out_of_range){

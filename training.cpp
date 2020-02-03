@@ -32,7 +32,7 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
                 *text = *text + *parts[i];
             }
 
-            Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
+            Tweet tweet = Tweet(*parts[3], *parts[2], *parts[1]);
             output.push_back(tweet);
 
             i++;
@@ -48,6 +48,7 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
         int index = 0;
 
         //We assume that data and target files include the same tweets
+        //in the same order
         while (raw_target.getline(line, 4096) && index < limit){
             DSString str = line; 
             vector<DSString*> parts = str.split(',');
@@ -75,8 +76,6 @@ bool filter_tweet(DSString * word){
     if(word->includes("http://")){
         return false;
     }
-
-
 
     //There is a chance our word only was endings
     if(*word == ""){
@@ -143,7 +142,7 @@ WordCounts gen_dict(vector<Tweet> data){
     //Update word count
     for(int i = 0; i < data.size(); i++){
         Tweet tweet = data.at(i);
-        vector<DSString*> parts = tweet.GetText()->split(' ');
+        vector<DSString*> parts = tweet.GetText().split(' ');
 
         word_counts.AddWord(tweet.GetUser(), tweet.GetClassification());
 
@@ -158,7 +157,7 @@ WordCounts gen_dict(vector<Tweet> data){
                 check_biagram(word, parts[j+1]);
             }
             
-            word_counts.AddWord(word, tweet.GetClassification());
+            word_counts.AddWord(*word, tweet.GetClassification());
         }
 
         if(i % 30000 == 0){ 
@@ -179,6 +178,7 @@ WordCounts run_training(vector<Tweet> data){
     return words;
 }
 
+//Write output file
 void write_errors(vector<Tweet> tweets, float acc, DSString path){
     ofstream output(path.c_str());
 
@@ -186,7 +186,7 @@ void write_errors(vector<Tweet> tweets, float acc, DSString path){
     output << acc << endl;
     
     for(int i = 0; i < tweets.size(); i++){
-        output << *tweets[i].GetID() << endl;
+        output << tweets[i].GetID() << endl;
     }
 }
 
@@ -195,12 +195,6 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
 
     int right = 0;
     int wrong = 0;
-
-    int right_pos = 0;
-    int wrong_pos = 0;
-    
-    int right_neg = 0;
-    int wrong_neg = 0;
 
     for(int i = 0; i < data.size(); i++){
         Tweet tweet = data.at(i);
@@ -213,7 +207,7 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
         score += weights.GetScore(tweet.GetUser());
         scores.push_back(score);
 
-        vector<DSString*> parts = tweet.GetText()->split(' ');
+        vector<DSString*> parts = tweet.GetText().split(' ');
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
@@ -225,8 +219,8 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
                 check_biagram(word, parts[j+1]);
             }
 
-            score += weights.GetScore(word);
-            scores.push_back(weights.GetScore(word));
+            score += weights.GetScore(*word);
+            scores.push_back(weights.GetScore(*word));
         }
 
         int prediction = (score / (scores.size()+1)) > -.03;
@@ -235,30 +229,16 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
         if(tweet.GetClassification() != prediction){
             errors.push_back(tweet);
             wrong++;
-
-            if(prediction == 4){
-                wrong_pos++;
-            } else {
-                wrong_neg++;
-            }
         } else {
             right++;
-            if(prediction == 4){
-                right_pos++;
-            } else {
-                right_neg++;
-            }
         }
     }
     
-
     float accuracy = (float)right / (right+wrong);
     cout << "Correct: " << right << endl;
     cout << "Incorrect: " << wrong << endl;
     cout << "Total: " << right + wrong << endl;
     cout << "Accuracy: " << accuracy << endl;
-    cout << "Positve stats: " << right_pos << " " << wrong_pos << " " << (float)right_pos/(right_pos+wrong_pos) << endl;
-    cout << "Neg stats: " << right_neg << " " << wrong_neg << " " << (float)right_neg/(right_neg+wrong_neg) << endl;
 
     write_errors(errors, accuracy, output);
 }
@@ -278,7 +258,7 @@ void create_algo(DSString train_data, DSString train_target, DSString test_data,
     WordCounts weights = run_training(training);
 
     //cout << "Test against training data" << endl;
-    //run_inference(weights, training);
+    //run_inference(weights, training, output);
 
     cout << "Test against testing data" << endl;
 

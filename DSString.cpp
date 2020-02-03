@@ -1,5 +1,4 @@
 #include "DSString.h"
-#include "catch.hpp"
 #include <cstring>
 #include <vector>
 #include <iostream>
@@ -8,7 +7,8 @@
 using namespace std;
 
 //Helper function to allocate memory
-void DSString::init(const char * input){
+void DSString::init(const char *input)
+{
     //Add room for null termination
     size_t length = strlen(input) + 1;
 
@@ -16,48 +16,58 @@ void DSString::init(const char * input){
     memcpy(data, input, length);
 }
 
-DSString::DSString(){
+DSString::DSString()
+{
     data = nullptr;
 }
 
-DSString::~DSString(){
+DSString::~DSString()
+{
     delete[] data;
 }
 
-DSString::DSString(char * input){
+DSString::DSString(char *input)
+{
     init(input);
 }
 
-DSString::DSString(const char * input){
+DSString::DSString(const char *input)
+{
     init(input);
 }
 
-DSString::DSString(const DSString & copy){
+DSString::DSString(const DSString &copy)
+{
     init(copy.data);
 }
 
-DSString & DSString::operator=(const DSString& other){
-    if(this != &other){
+DSString &DSString::operator=(const DSString &other)
+{
+    if (this != &other)
+    {
         delete[] data;
         init(other.data);
     }
     return *this;
 }
 
-DSString & DSString::operator=(const char * other){
+DSString &DSString::operator=(const char *other)
+{
     //If data is not the same pointer
     //Update pointer
-    if(data != other){
-        delete []data;
+    if (data != other)
+    {
+        delete[] data;
         init(other);
     }
 
     return *this;
 }
 
-DSString DSString::operator+(const DSString & other){
+DSString DSString::operator+(const DSString &other)
+{
     //Allocate room for both plus null terminator
-    char * tmp = new char[strlen(data) + strlen(other.data) + 1];
+    char *tmp = new char[strlen(data) + strlen(other.data) + 1];
 
     strcpy(tmp, data);
     strcat(tmp, other.data);
@@ -70,36 +80,42 @@ DSString DSString::operator+(const DSString & other){
     return output;
 }
 
-bool DSString::operator == (const DSString & other){
+bool DSString::operator==(const DSString &other) const
+{
     return strcmp(data, other.data) == 0;
 };
 
-std::ostream & operator << (std::ostream &out, const DSString &c){
+std::ostream &operator<<(std::ostream &out, const DSString &c)
+{
     out << c.data;
     return out;
-} 
+}
 
-bool DSString::operator < (const DSString& other) const {
+bool DSString::operator<(const DSString &other) const
+{
     return strcmp(data, other.data) > 0;
 };
 
-int DSString::length() const{
+int DSString::length() const
+{
     return strlen(data);
 }
 
-std::vector<DSString*> DSString::split(char find) const {
-    std::vector<DSString*> output;
+std::vector<DSString *> DSString::split(char find) const
+{
+    std::vector<DSString *> output;
 
     int start = 0;
-    char * occur = strchr(data, find);
-    while(occur != nullptr){
-        DSString * sub = new DSString(substring(start, occur-data));
+    char *occur = strchr(data, find);
+    while (occur != nullptr)
+    {
+        DSString * sub = new DSString(substring(start, occur - data));
         output.push_back(sub);
 
-        start = occur-data+1;
-        occur = strchr(occur+1, find);
+        start = occur - data + 1;
+        occur = strchr(occur + 1, find);
     }
-    
+
     //Final substring
     DSString * sub = new DSString(substring(start, strlen(data)));
     output.push_back(sub);
@@ -107,142 +123,91 @@ std::vector<DSString*> DSString::split(char find) const {
     return output;
 };
 
-DSString DSString::substring(int start, int end) const {
+DSString DSString::substring(int start, int end) const
+{
     //Technically the biggest the substring could be is the entire string
-    char * tmp = new char[length()];
+    char *tmp = new char[length()];
 
-    for(int i = start; i < end; i++){
-        tmp[i-start] = data[i];
+    for (int i = start; i < min(end, length()); i++)
+    {
+        tmp[i - start] = data[i];
     };
 
-    tmp[end-start] = '\0';
+    tmp[end - start] = '\0';
 
     DSString output = tmp;
-    delete [] tmp;
+    delete[] tmp;
 
     return output;
 };
 
-void DSString::toLower(){
-    for(int i = 0; i < length(); i++){
+void DSString::toLower()
+{
+    for (int i = 0; i < length(); i++)
+    {
         data[i] = tolower(data[i]);
     }
 }
 
-bool DSString::isASCII() const{
-    for(int i = 0; i < length()-1; i++){
-        int check = static_cast<int>(data[i]); 
-        if(check > 127 || check < 0){
+bool DSString::isASCII() const
+{
+    for (int i = 0; i < length() - 1; i++)
+    {
+        int check = static_cast<int>(data[i]);
+        if (check > 127 || check < 0)
+        {
             return false;
         }
     }
     return true;
 }
 
-void DSString::filter(DSString filter){
+void DSString::filter(DSString filter)
+{
     DSString output = "";
 
     //This is the first occur
-    char * occur = strstr(data, filter.data);
+    char *occur = strstr(data, filter.data);
 
-    if(occur == nullptr){
+    if (occur == nullptr)
+    {
         return;
     }
 
     int start = occur - data;
-    int end = start+filter.length();
+    int end = start + filter.length();
 
     output = substring(0, start) + substring(end, length());
     occur = strstr(output.data, filter.data);
 
-    while(occur != nullptr){
+    while (occur != nullptr)
+    {
         int start = occur - output.data;
-        int end = start+filter.length();
+        int end = start + filter.length();
 
         output = output.substring(0, start) + substring(end, output.length());
 
         occur = strstr(output.data, filter.data);
     }
 
-    delete [] data;
+    delete[] data;
     init(output.data);
 }
-    
-bool DSString::includes(const DSString & other) const {
-    char * output = strstr(data, other.data);
+
+bool DSString::includes(const DSString &other) const
+{
+    char *output = strstr(data, other.data);
 
     return output != nullptr;
 };
 
-int DSString::atoi() const {
+int DSString::atoi() const
+{
     return std::atoi(data);
 }
 
-char * DSString::c_str() const {
+char *DSString::c_str() const
+{
     return data;
-} 
-
-
-TEST_CASE("Creation from char should work", "[DSString]"){
-    DSString test = "test";
-    REQUIRE(!strcmp(test.c_str(), "test"));
 }
 
-TEST_CASE("Creation from DSString should work", "[DSString]"){
-    DSString test = "test";
-    DSString test2 = test;
-
-    REQUIRE(!strcmp(test.c_str(), test2.c_str()));
-}
-
-TEST_CASE("Assignment operator from DSString should work", "[DSString]"){
-    DSString test = "test";
-    DSString test2 = "test2";
-
-    test2 = test;
-
-    REQUIRE(!strcmp(test.c_str(), test2.c_str()));
-}
-
-TEST_CASE("Assignment operator from char should work", "[DSString]"){
-    DSString test = "test";
-    const char * test2 = "test2";
-
-    test = test2;
-
-    REQUIRE(!strcmp(test.c_str(), test2));
-}
-
-TEST_CASE("+ operator should work", "[DSString]"){
-    DSString test = "test";
-    DSString test2 = "test2";
-
-    DSString test3 = test + test2;
-
-    REQUIRE(!strcmp(test3.c_str(), "testtest2"));
-}
-
-TEST_CASE("== operator should work", "[DSString]"){
-    DSString test = "test";
-    DSString test2 = "test2";
-    DSString test3 = "test";
-
-    REQUIRE(!(test == test2));
-    REQUIRE((test == test));
-}
-
-TEST_CASE("length function should work", "[DSString]"){
-    DSString test = "test";
-    REQUIRE(test.length() == 4);
-}
-
-TEST_CASE("split function should work", "[DSString]"){
-    DSString test = "test test test";
-    //vector<DSString > parts = test.split(' ');
-    /*DSString compare = "test";
-
-    REQUIRE(parts.size() == 3);
-    REQUIRE(parts[0] == compare);
-    REQUIRE(parts[1] == compare);
-    REQUIRE(parts[2] == compare); */
-}
