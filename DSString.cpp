@@ -1,4 +1,5 @@
 #include "DSString.h"
+#include "catch.hpp"
 #include <cstring>
 #include <vector>
 #include <iostream>
@@ -179,4 +180,69 @@ int DSString::atoi() const {
 
 char * DSString::c_str() const {
     return data;
-}   
+} 
+
+
+TEST_CASE("Creation from char should work", "[DSString]"){
+    DSString test = "test";
+    REQUIRE(!strcmp(test.c_str(), "test"));
+}
+
+TEST_CASE("Creation from DSString should work", "[DSString]"){
+    DSString test = "test";
+    DSString test2 = test;
+
+    REQUIRE(!strcmp(test.c_str(), test2.c_str()));
+}
+
+TEST_CASE("Assignment operator from DSString should work", "[DSString]"){
+    DSString test = "test";
+    DSString test2 = "test2";
+
+    test2 = test;
+
+    REQUIRE(!strcmp(test.c_str(), test2.c_str()));
+}
+
+TEST_CASE("Assignment operator from char should work", "[DSString]"){
+    DSString test = "test";
+    const char * test2 = "test2";
+
+    test = test2;
+
+    REQUIRE(!strcmp(test.c_str(), test2));
+}
+
+TEST_CASE("+ operator should work", "[DSString]"){
+    DSString test = "test";
+    DSString test2 = "test2";
+
+    DSString test3 = test + test2;
+
+    REQUIRE(!strcmp(test3.c_str(), "testtest2"));
+}
+
+TEST_CASE("== operator should work", "[DSString]"){
+    DSString test = "test";
+    DSString test2 = "test2";
+    DSString test3 = "test";
+
+    REQUIRE(!(test == test2));
+    REQUIRE((test == test));
+}
+
+TEST_CASE("length function should work", "[DSString]"){
+    DSString test = "test";
+    REQUIRE(test.length() == 4);
+}
+
+TEST_CASE("split function should work", "[DSString]"){
+    DSString test = "test test test";
+    //vector<DSString > parts = test.split(' ');
+    /*DSString compare = "test";
+
+    REQUIRE(parts.size() == 3);
+    REQUIRE(parts[0] == compare);
+    REQUIRE(parts[1] == compare);
+    REQUIRE(parts[2] == compare); */
+}

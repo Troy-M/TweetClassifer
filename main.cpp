@@ -1,11 +1,15 @@
 #include <iostream> 
 #include "training.h"
 #include "DSString.h" 
+#define CATCH_CONFIG_RUNNER
+#include "catch.hpp"
+
 using namespace std; 
 
 
 int main(int argc, char** argv){
     if(argc == 1){
+        return Catch::Session().run( argc, argv );
         //Testing template
     } else {
         //Command line format
