@@ -9,20 +9,19 @@
 
 using namespace std;
 
-vector<Tweet*> load_pairs(DSString data, DSString target, int limit){
+vector<Tweet> load_pairs(DSString data, DSString target, int limit){
     //Step one load the training data
-    auto output = vector<Tweet*>();
+    auto output = vector<Tweet>();
 
-    string line;
+    char line[4096];
     ifstream raw_tweets(data.c_str());
     if (raw_tweets.is_open()){
-        //CSV header, ignore        
-        getline(raw_tweets, line);
+        //CSV header, ignore  
+        raw_tweets.getline(line, 4096);      
 
-        //TODO: Remove to train against entire dataset
         int i = 0;
-        while (getline(raw_tweets, line) && i < limit){
-            DSString str = line.c_str(); 
+        while (raw_tweets.getline(line, 4096) && i < limit){
+            DSString str = line; 
             vector<DSString*> parts = str.split(',');
 
             //Some tweets contain commas
@@ -33,7 +32,7 @@ vector<Tweet*> load_pairs(DSString data, DSString target, int limit){
                 *text = *text + *parts[i];
             }
 
-            Tweet * tweet = new Tweet(parts[3], parts[2], parts[1]);
+            Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
             output.push_back(tweet);
 
             i++;
@@ -44,17 +43,17 @@ vector<Tweet*> load_pairs(DSString data, DSString target, int limit){
     ifstream raw_target(target.c_str());
     if (raw_target.is_open()){
         //CSV header, ignore        
-        getline(raw_target, line);
+        raw_target.getline(line, 4096);
 
         int index = 0;
 
         //We assume that data and target files include the same tweets
-        while (getline(raw_target, line) && index < limit){
-            DSString str = line.c_str(); 
+        while (raw_target.getline(line, 4096) && index < limit){
+            DSString str = line; 
             vector<DSString*> parts = str.split(',');
 
             int classification = parts[1]->atoi();
-            output.at(index)->SetClassification(classification);
+            output.at(index).SetClassification(classification);
             index += 1;
         }
 
@@ -136,17 +135,17 @@ void check_biagram(DSString * word, DSString * next_word){
     } 
 }
 
-WordCounts  gen_dict(vector<Tweet*> data){
+WordCounts gen_dict(vector<Tweet> data){
     //word -> (positive count, negative count)
     WordCounts word_counts =  WordCounts();
 
     //Loop through every tweet, split it into words
     //Update word count
     for(int i = 0; i < data.size(); i++){
-        Tweet * tweet = data.at(i);
-        vector<DSString*> parts = tweet->GetText()->split(' ');
+        Tweet tweet = data.at(i);
+        vector<DSString*> parts = tweet.GetText()->split(' ');
 
-        word_counts.AddWord(tweet->GetUser(), tweet->GetClassification());
+        word_counts.AddWord(tweet.GetUser(), tweet.GetClassification());
 
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
@@ -159,7 +158,7 @@ WordCounts  gen_dict(vector<Tweet*> data){
                 check_biagram(word, parts[j+1]);
             }
             
-            word_counts.AddWord(word, tweet->GetClassification());
+            word_counts.AddWord(word, tweet.GetClassification());
         }
 
         if(i % 30000 == 0){ 
@@ -171,7 +170,7 @@ WordCounts  gen_dict(vector<Tweet*> data){
     return word_counts;
 }
 
-WordCounts run_training(vector<Tweet*> data){
+WordCounts run_training(vector<Tweet> data){
     WordCounts words = gen_dict(data);
     words.GenScores();
 
@@ -180,19 +179,19 @@ WordCounts run_training(vector<Tweet*> data){
     return words;
 }
 
-void write_errors(vector<Tweet *> tweets, float acc, DSString path){
+void write_errors(vector<Tweet> tweets, float acc, DSString path){
     ofstream output(path.c_str());
 
     output << setprecision(3) << fixed << endl;
     output << acc << endl;
     
     for(int i = 0; i < tweets.size(); i++){
-        output << *tweets[i]->GetID() << endl;
+        output << *tweets[i].GetID() << endl;
     }
 }
 
-void run_inference(WordCounts weights, vector<Tweet*> data, DSString output){
-    auto errors = vector<Tweet*>();
+void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
+    auto errors = vector<Tweet>();
 
     int right = 0;
     int wrong = 0;
@@ -204,17 +203,17 @@ void run_inference(WordCounts weights, vector<Tweet*> data, DSString output){
     int wrong_neg = 0;
 
     for(int i = 0; i < data.size(); i++){
-        Tweet * tweet = data.at(i);
+        Tweet tweet = data.at(i);
 
         float score = 0;
 
         auto scores = vector<float>();
 
         //Consider the score of the user
-        score += weights.GetScore(tweet->GetUser());
+        score += weights.GetScore(tweet.GetUser());
         scores.push_back(score);
 
-        vector<DSString*> parts = tweet->GetText()->split(' ');
+        vector<DSString*> parts = tweet.GetText()->split(' ');
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
@@ -233,7 +232,7 @@ void run_inference(WordCounts weights, vector<Tweet*> data, DSString output){
         int prediction = (score / (scores.size()+1)) > -.03;
         prediction *= 4;
 
-        if(tweet->GetClassification() != prediction){
+        if(tweet.GetClassification() != prediction){
             errors.push_back(tweet);
             wrong++;
 
@@ -268,11 +267,11 @@ void run_inference(WordCounts weights, vector<Tweet*> data, DSString output){
 //Load data, train algo, test algo, write output
 void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
 {
-    vector<Tweet*> training = load_pairs(train_data, train_target, 5000000);
+    vector<Tweet> training = load_pairs(train_data, train_target, 5000000);
 
     cout << "Done loading training data. " << training.size() << " loaded" << endl;
     
-    vector<Tweet*> testing = load_pairs(test_data, test_target, 20000000);
+    vector<Tweet> testing = load_pairs(test_data, test_target, 20000000);
 
     cout << "Done loading testing data. " << testing.size() << " loaded" << endl;
 
