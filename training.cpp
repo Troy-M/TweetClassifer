@@ -12,6 +12,8 @@ using namespace std;
 vector<Tweet> load_pairs(DSString data, DSString target){
     auto output = vector<Tweet>();
 
+    cout << "Loading pairs of tweets from " << data << " and " << target << endl;
+
     char line[4096];
     ifstream raw_tweets(data.c_str());
     if (raw_tweets.is_open()){
