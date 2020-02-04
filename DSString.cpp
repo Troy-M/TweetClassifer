@@ -128,6 +128,11 @@ DSString DSString::substring(int start, int end) const
     //Technically the biggest the substring could be is the entire string
     char *tmp = new char[length()];
 
+    //Bounds checking
+    if(start > end){
+        return "";
+    }
+
     //Protect bounds
     end = min(end, length());
 

@@ -18,11 +18,9 @@ vector<Tweet> load_pairs(DSString data, DSString target){
     ifstream raw_tweets(data.c_str());
     if (raw_tweets.is_open()){
         //CSV header, ignore  
-        cout << "Line 21" << endl;
         raw_tweets.getline(line, 4096);      
 
         while (raw_tweets.getline(line, 4096)){
-            cout << "Line 25" << endl;
             DSString str = line; 
             vector<DSString*> parts = str.split(',');
 
@@ -36,9 +34,9 @@ vector<Tweet> load_pairs(DSString data, DSString target){
                 //We dont need these parts and we cant make tweet free them
                 delete parts[i];
             }
-            cout << "Line 39" << endl;
 
             Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
+
             output.push_back(tweet);
 
         }
@@ -48,11 +46,8 @@ vector<Tweet> load_pairs(DSString data, DSString target){
         exit(-1);
     }
 
-    cout << "Line 51" << endl;
-
     ifstream raw_target(target.c_str());
     if (raw_target.is_open()){
-        cout << "line 55" << endl;
         //CSV header, ignore        
         raw_target.getline(line, 4096);
 
@@ -60,7 +55,6 @@ vector<Tweet> load_pairs(DSString data, DSString target){
 
         //We assume that data and target files include the same tweets
         //in the same order
-        cout << "line 63" << endl;
         while (raw_target.getline(line, 4096)){
             DSString str = line; 
             vector<DSString*> parts = str.split(',');
@@ -68,8 +62,6 @@ vector<Tweet> load_pairs(DSString data, DSString target){
             int classification = parts[1]->atoi();
             output.at(index).SetClassification(classification);
             index += 1;
-
-            cout << "line 72" << endl;
 
             for(int i = 0; i < parts.size(); i++){
                 delete parts[i];

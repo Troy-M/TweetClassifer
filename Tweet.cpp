@@ -1,12 +1,15 @@
 #include "Tweet.h"
 #include <iostream>
 #include "DSString.h"
+#include <iostream>
+using namespace std;
 
 Tweet::Tweet(DSString * text, DSString * user, DSString * id)
 {
     this->text = text;
     this->id = id;
     this->user = user;
+    this->classification = new int(-1);
 }
 
 Tweet::~Tweet()
@@ -14,6 +17,7 @@ Tweet::~Tweet()
     delete text;
     delete id;
     delete user;
+    delete classification;
 }
 
 Tweet::Tweet(const Tweet &copy)
