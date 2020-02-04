@@ -40,6 +40,9 @@ vector<Tweet> load_pairs(DSString data, DSString target){
 
         }
         raw_tweets.close();
+    } else {
+        cout << "Error opening " << data << " file" << endl;
+        exit(-1);
     }
 
     ifstream raw_target(target.c_str());
@@ -65,6 +68,9 @@ vector<Tweet> load_pairs(DSString data, DSString target){
         }
 
         raw_target.close();
+    } else {
+        cout << "Error opening " << target << " file" << endl;
+        exit(-1);
     }
 
     return output;
