@@ -30,9 +30,12 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
             DSString * text = parts[3];
             for(int i = 4; i < parts.size(); i++){
                 *text = *text + *parts[i];
+
+                //We dont need these parts and we cant make tweet free them
+                delete parts[i];
             }
 
-            Tweet tweet = Tweet(*parts[3], *parts[2], *parts[1]);
+            Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
             output.push_back(tweet);
 
             i++;
@@ -56,6 +59,10 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
             int classification = parts[1]->atoi();
             output.at(index).SetClassification(classification);
             index += 1;
+
+            for(int i = 0; i < parts.size(); i++){
+                delete parts[i];
+            }
         }
 
         raw_target.close();
@@ -100,21 +107,6 @@ bool filter_tweet(DSString * word){
     word->filter(".");
     word->filter("!");
     
-    //Words that are common
-    /* word->filter("a");
-    word->filter("an");
-    word->filter("the");
-    word->filter("to");
-    word->filter("you");
-    word->filter("i");
-    word->filter("then");
-    word->filter("is");
-    word->filter("are");
-    word->filter("then");
-    word->filter("or");
-    word->filter("and"); */
-
-
     //Filter out one letter words
     //These are largely numbers
     if(word->length() < 2){
@@ -142,22 +134,27 @@ WordCounts gen_dict(vector<Tweet> data){
     //Update word count
     for(int i = 0; i < data.size(); i++){
         Tweet tweet = data.at(i);
-        vector<DSString*> parts = tweet.GetText().split(' ');
+        vector<DSString*> parts = tweet.GetText()->split(' ');
 
-        word_counts.AddWord(tweet.GetUser(), tweet.GetClassification());
+        word_counts.AddWord(*tweet.GetUser(), *tweet.GetClassification());
 
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
             if(!filter_tweet(word)){
                 continue;
+
+                delete parts[j];
             };
 
             if(j+1 < parts.size()){
                 check_biagram(word, parts[j+1]);
             }
             
-            word_counts.AddWord(*word, tweet.GetClassification());
+            word_counts.AddWord(*word, *tweet.GetClassification());
+
+            //Copy is given to addword            
+            delete parts[j];
         }
 
         if(i % 30000 == 0){ 
@@ -204,15 +201,16 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
         auto scores = vector<float>();
 
         //Consider the score of the user
-        score += weights.GetScore(tweet.GetUser());
+        score += weights.GetScore(*tweet.GetUser());
         scores.push_back(score);
 
-        vector<DSString*> parts = tweet.GetText().split(' ');
+        vector<DSString*> parts = tweet.GetText()->split(' ');
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
             if(!filter_tweet(word)){
                 continue;
+                delete parts[j];
             };
 
             if(j+1 < parts.size()){
@@ -220,13 +218,13 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
             }
 
             score += weights.GetScore(*word);
-            scores.push_back(weights.GetScore(*word));
+            delete parts[j];
         }
 
-        int prediction = (score / (scores.size()+1)) > -.03;
+        int prediction = (score / (parts.size()+1)) > -.03;
         prediction *= 4;
 
-        if(tweet.GetClassification() != prediction){
+        if(*tweet.GetClassification() != prediction){
             errors.push_back(tweet);
             wrong++;
         } else {
@@ -247,11 +245,11 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
 //Load data, train algo, test algo, write output
 void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
 {
-    vector<Tweet> training = load_pairs(train_data, train_target, 5000000);
+    vector<Tweet> training = load_pairs(train_data, train_target, 50000000);
 
     cout << "Done loading training data. " << training.size() << " loaded" << endl;
     
-    vector<Tweet> testing = load_pairs(test_data, test_target, 20000000);
+    vector<Tweet> testing = load_pairs(test_data, test_target, 200000);
 
     cout << "Done loading testing data. " << testing.size() << " loaded" << endl;
 
