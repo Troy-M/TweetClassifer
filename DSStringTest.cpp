@@ -44,7 +44,7 @@ TEST_CASE("+ operator should work", "[DSString]")
     DSString test2 = "test2";
 
     DSString test3 = test + test2;
-
+ 
     REQUIRE(!strcmp(test3.c_str(), "testtest2"));
 }
 

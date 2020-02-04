@@ -1,4 +1,4 @@
-#include "tweet.h"
+#include "Tweet.h"
 #include <iostream>
 #include "DSString.h"
 
@@ -29,7 +29,9 @@ Tweet &Tweet::operator=(const Tweet &other)
 {
     if (this != &other)
     {
-        delete this;
+        delete text;
+        delete id;
+        delete user;
 
         text = new DSString(*other.text);
         id = new DSString(*other.id);
@@ -38,8 +40,6 @@ Tweet &Tweet::operator=(const Tweet &other)
     }    
     return *this;
 }
-
-
 
 Tweet::Tweet(DSString * text, DSString * user, DSString * id, int * classification){
     

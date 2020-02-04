@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "DSString.h"
-#include "tweet.h"
+#include "Tweet.h"
 #include <vector>
 #include <map>
 #include "WordCounts.h"
@@ -10,7 +10,6 @@
 using namespace std;
 
 vector<Tweet> load_pairs(DSString data, DSString target, int limit){
-    //Step one load the training data
     auto output = vector<Tweet>();
 
     char line[4096];
@@ -84,6 +83,10 @@ bool filter_tweet(DSString * word){
         return false;
     }
 
+    if(word->includes("https://")){
+        return false;
+    }
+
     //There is a chance our word only was endings
     if(*word == ""){
         return false;
@@ -128,7 +131,7 @@ void check_biagram(DSString * word, DSString * next_word){
 
 WordCounts gen_dict(vector<Tweet> data){
     //word -> (positive count, negative count)
-    WordCounts word_counts =  WordCounts();
+    WordCounts word_counts = WordCounts();
 
     //Loop through every tweet, split it into words
     //Update word count
@@ -166,6 +169,7 @@ WordCounts gen_dict(vector<Tweet> data){
     return word_counts;
 }
 
+//Get the words and calc the scores
 WordCounts run_training(vector<Tweet> data){
     WordCounts words = gen_dict(data);
     words.GenScores();
@@ -221,6 +225,7 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
             delete parts[j];
         }
 
+        //Bias to counter dataset
         int prediction = (score / (parts.size()+1)) > -.03;
         prediction *= 4;
 
