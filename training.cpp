@@ -9,7 +9,7 @@
 
 using namespace std;
 
-vector<Tweet> load_pairs(DSString data, DSString target, int limit){
+vector<Tweet> load_pairs(DSString data, DSString target){
     auto output = vector<Tweet>();
 
     char line[4096];
@@ -18,8 +18,7 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
         //CSV header, ignore  
         raw_tweets.getline(line, 4096);      
 
-        int i = 0;
-        while (raw_tweets.getline(line, 4096) && i < limit){
+        while (raw_tweets.getline(line, 4096)){
             DSString str = line; 
             vector<DSString*> parts = str.split(',');
 
@@ -37,7 +36,6 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
             Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
             output.push_back(tweet);
 
-            i++;
         }
         raw_tweets.close();
     }
@@ -51,7 +49,7 @@ vector<Tweet> load_pairs(DSString data, DSString target, int limit){
 
         //We assume that data and target files include the same tweets
         //in the same order
-        while (raw_target.getline(line, 4096) && index < limit){
+        while (raw_target.getline(line, 4096)){
             DSString str = line; 
             vector<DSString*> parts = str.split(',');
 
@@ -187,7 +185,7 @@ void write_errors(vector<Tweet> tweets, float acc, DSString path){
     output << acc << endl;
     
     for(int i = 0; i < tweets.size(); i++){
-        output << tweets[i].GetID() << endl;
+        output << *tweets[i].GetID() << endl;
     }
 }
 
@@ -250,18 +248,15 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
 //Load data, train algo, test algo, write output
 void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
 {
-    vector<Tweet> training = load_pairs(train_data, train_target, 50000000);
+    vector<Tweet> training = load_pairs(train_data, train_target);
 
     cout << "Done loading training data. " << training.size() << " loaded" << endl;
     
-    vector<Tweet> testing = load_pairs(test_data, test_target, 200000);
+    vector<Tweet> testing = load_pairs(test_data, test_target);
 
     cout << "Done loading testing data. " << testing.size() << " loaded" << endl;
 
     WordCounts weights = run_training(training);
-
-    //cout << "Test against training data" << endl;
-    //run_inference(weights, training, output);
 
     cout << "Test against testing data" << endl;
 

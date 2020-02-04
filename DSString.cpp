@@ -128,7 +128,10 @@ DSString DSString::substring(int start, int end) const
     //Technically the biggest the substring could be is the entire string
     char *tmp = new char[length()];
 
-    for (int i = start; i < min(end, length()); i++)
+    //Protect bounds
+    end = min(end, length());
+
+    for (int i = start; i < end; i++)
     {
         tmp[i - start] = data[i];
     };
