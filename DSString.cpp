@@ -12,6 +12,7 @@ void DSString::init(const char *input)
     //Add room for null termination
     size_t length = strlen(input) + 1;
 
+    size = length-1;
     data = new char[length];
     memcpy(data, input, length);
 }
@@ -19,6 +20,7 @@ void DSString::init(const char *input)
 DSString::DSString()
 {
     data = nullptr;
+    size = 0;
 }
 
 DSString::~DSString()
@@ -98,7 +100,7 @@ bool DSString::operator<(const DSString &other) const
 
 int DSString::length() const
 {
-    return strlen(data);
+    return size;
 }
 
 std::vector<DSString *> DSString::split(char find) const
@@ -109,7 +111,7 @@ std::vector<DSString *> DSString::split(char find) const
     char *occur = strchr(data, find);
     while (occur != nullptr)
     {
-        DSString * sub = new DSString(substring(start, occur - data));
+        auto * sub = new DSString(substring(start, occur - data));
         output.push_back(sub);
 
         start = occur - data + 1;
@@ -117,7 +119,7 @@ std::vector<DSString *> DSString::split(char find) const
     }
 
     //Final substring
-    DSString * sub = new DSString(substring(start, strlen(data)));
+    auto * sub = new DSString(substring(start, strlen(data)));
     output.push_back(sub);
 
     return output;
@@ -159,7 +161,7 @@ void DSString::toLower()
 
 bool DSString::isASCII() const
 {
-    for (int i = 0; i < length() - 1; i++)
+    for (int i = 0; i < length(); i++)
     {
         int check = static_cast<int>(data[i]);
         if (check > 127 || check < 0)
@@ -170,7 +172,7 @@ bool DSString::isASCII() const
     return true;
 }
 
-void DSString::filter(DSString filter)
+void DSString::filter(const DSString& filter)
 {
     DSString output = "";
 

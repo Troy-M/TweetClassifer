@@ -3,7 +3,7 @@
 
 #include "DSString.h" 
 
-void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output);
+void create_algo(const DSString&, const DSString&, const DSString&, const DSString&, const DSString&);
 bool filter_tweet(DSString * word);
 
 #endif

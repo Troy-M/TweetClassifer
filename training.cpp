@@ -2,6 +2,7 @@
 #include <fstream>
 #include "DSString.h"
 #include "Tweet.h"
+#include <utility>
 #include <vector>
 #include <map>
 #include "WordCounts.h"
@@ -9,7 +10,7 @@
 
 using namespace std;
 
-vector<Tweet> load_pairs(DSString data, DSString target){
+vector<Tweet> load_pairs(const DSString& data, const DSString& target){
     auto output = vector<Tweet>();
 
     cout << "Loading pairs of tweets from " << data << " and " << target << endl;
@@ -30,16 +31,18 @@ vector<Tweet> load_pairs(DSString data, DSString target){
             DSString * text = parts[3];
             for(int i = 4; i < parts.size(); i++){
                 *text = *text + *parts[i];
-
-                //We dont need these parts and we cant make tweet free them
-                delete parts[i];
             }
 
             Tweet tweet = Tweet(parts[3], parts[2], parts[1]);
 
-            output.push_back(tweet);
+            //Cleanup this memory, Tweet makes a copy
+            for(auto & part : parts){
+                delete part;
+            }
 
+            output.push_back(tweet);
         }
+
         raw_tweets.close();
     } else {
         cout << "Error opening " << data << " file" << endl;
@@ -63,8 +66,8 @@ vector<Tweet> load_pairs(DSString data, DSString target){
             output.at(index).SetClassification(classification);
             index += 1;
 
-            for(int i = 0; i < parts.size(); i++){
-                delete parts[i];
+            for(auto & part : parts){
+                delete part;
             }
         }
 
@@ -119,11 +122,8 @@ bool filter_tweet(DSString * word){
     
     //Filter out one letter words
     //These are largely numbers
-    if(word->length() < 2){
-        return false;
-    }
+    return word->length() >= 2;
 
-    return true;
 }
 
 void check_biagram(DSString * word, DSString * next_word){
@@ -146,7 +146,7 @@ WordCounts gen_dict(vector<Tweet> data){
         Tweet tweet = data.at(i);
         vector<DSString*> parts = tweet.GetText()->split(' ');
 
-        word_counts.AddWord(*tweet.GetUser(), *tweet.GetClassification());
+        word_counts.AddWord(*tweet.GetUser(), tweet.GetClassification());
 
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
@@ -160,7 +160,7 @@ WordCounts gen_dict(vector<Tweet> data){
                 check_biagram(word, parts[j+1]);
             }
             
-            word_counts.AddWord(*word, *tweet.GetClassification());
+            word_counts.AddWord(*word, tweet.GetClassification());
 
             //Copy is given to addword            
             delete parts[j];
@@ -177,7 +177,7 @@ WordCounts gen_dict(vector<Tweet> data){
 
 //Get the words and calc the scores
 WordCounts run_training(vector<Tweet> data){
-    WordCounts words = gen_dict(data);
+    WordCounts words = gen_dict(std::move(data));
     words.GenScores();
 
     cout << "Ran training on " << words.Size() << " words" << endl;
@@ -186,7 +186,7 @@ WordCounts run_training(vector<Tweet> data){
 }
 
 //Write output file
-void write_errors(vector<Tweet> tweets, float acc, DSString path){
+void write_errors(vector<Tweet> tweets, float acc, const DSString& path){
     ofstream output(path.c_str());
 
     output << setprecision(3) << fixed << endl;
@@ -197,7 +197,7 @@ void write_errors(vector<Tweet> tweets, float acc, DSString path){
     }
 }
 
-void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
+void run_inference(WordCounts weights, vector<Tweet> data, const DSString& output){
     auto errors = vector<Tweet>();
 
     int right = 0;
@@ -232,7 +232,7 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
         int prediction = (score / (parts.size()+1)) > -.03;
         prediction *= 4;
 
-        if(*tweet.GetClassification() != prediction){
+        if(tweet.GetClassification() != prediction){
             errors.push_back(tweet);
             wrong++;
         } else {
@@ -251,7 +251,7 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
 
 //Main entry loop from main
 //Load data, train algo, test algo, write output
-void create_algo(DSString train_data, DSString train_target, DSString test_data, DSString test_target, DSString output)
+void create_algo(const DSString& train_data, const DSString& train_target, const DSString& test_data, const DSString& test_target, const DSString& output)
 {
     vector<Tweet> training = load_pairs(train_data, train_target);
 
