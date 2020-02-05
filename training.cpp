@@ -152,9 +152,8 @@ WordCounts gen_dict(vector<Tweet> data){
             DSString * word = parts[j];
 
             if(!filter_tweet(word)){
-                continue;
-
                 delete parts[j];
+                continue;
             };
 
             if(j+1 < parts.size()){
@@ -209,19 +208,16 @@ void run_inference(WordCounts weights, vector<Tweet> data, DSString output){
 
         float score = 0;
 
-        auto scores = vector<float>();
-
         //Consider the score of the user
         score += weights.GetScore(*tweet.GetUser());
-        scores.push_back(score);
 
         vector<DSString*> parts = tweet.GetText()->split(' ');
         for(int j = 0; j < parts.size(); j++){
             DSString * word = parts[j];
 
             if(!filter_tweet(word)){
-                continue;
                 delete parts[j];
+                continue;
             };
 
             if(j+1 < parts.size()){
