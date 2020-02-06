@@ -34,26 +34,6 @@ void WordCounts::AddWord(DSString word, bool positive){
 int WordCounts::Size() const {
     return words.size();
 }
-/*
-void WordCounts::GenScores(){
-    //Sort these indices based on condition
-    std::vector<int> y(words.size());
-    std::iota(y.begin(), y.end(), 0);
-
-    auto comparator = [&](int a, int b){ 
-        return GetScore(a) > GetScore(b); 
-    };
-
-    std::sort(y.begin(), y.end(), comparator);
-
-    auto output = vector<pair<DSString*, float> >();
-
-    for(auto v : y){
-        pair<DSString*, float> item(words[v], GetScore(v));
-        
-        output.push_back(item);
-    }
-}; */
 
 void WordCounts::GenScores(){
     for(int i = 0; i < words.size(); i++){
@@ -78,11 +58,7 @@ float WordCounts::GenScore(int index){
     //Get the percentage of times it is used in a postive context
     float ratio_score = (float)(pos[index] - neg[index]) / (pos[index] + neg[index]);
 
-    //if(neg[index] - pos[index]){
-    //    ratio_score *= 1;
-    //}
-
-
+    //Means it was never mentioned in other class, ignore
     if(ratio_score == 1 || ratio_score == -1){
         return 0;
     }

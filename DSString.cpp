@@ -95,7 +95,7 @@ std::ostream &operator<<(std::ostream &out, const DSString &c)
 
 bool DSString::operator<(const DSString &other) const
 {
-    return strcmp(data, other.data) > 0;
+    return strcmp(data, other.data) < 0;
 };
 
 int DSString::length() const

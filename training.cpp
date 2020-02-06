@@ -119,7 +119,7 @@ bool filter_tweet(DSString * word){
     word->filter("?");
     word->filter(".");
     word->filter("!");
-    
+
     //Filter out one letter words
     //These are largely numbers
     return word->length() >= 2;
@@ -129,10 +129,12 @@ bool filter_tweet(DSString * word){
 void check_biagram(DSString * word, DSString * next_word){
     if(*word == "not"){
         *word = *word + " " + *next_word; 
+        *next_word = "";
     } 
 
     if(*word == "very"){
         *word = *word + " " + *next_word; 
+        *next_word = "";
     } 
 }
 
