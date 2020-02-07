@@ -105,6 +105,18 @@ TEST_CASE("DSString class", "[DSString")
         REQUIRE(toSplit == *parts[0]);
     }
 
+    SECTION("split should work with a splice")
+    {
+        DSString toSplit = "t,t";
+        DSString answer = "t";
+
+        vector<DSString *> parts = toSplit.split(',');
+
+        REQUIRE(parts.size() == 2);
+        REQUIRE(answer == *parts[0]);
+        REQUIRE(answer == *parts[1]);
+    }
+
     SECTION("substring should work")
     {
         DSString substring = "test test test";

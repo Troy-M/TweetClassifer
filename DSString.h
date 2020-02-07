@@ -24,10 +24,10 @@ class DSString {
         bool operator == (const DSString &) const;
 
         //std::cout overload
-        friend std::ostream & operator << (std::ostream &out, const DSString &c);
+        friend std::ostream & operator << (std::ostream &, const DSString &);
 
         //Remove a given phrase in string
-        void filter(const DSString& filter);
+        void filter(const DSString&);
 
         //Change string to lower case
         void toLower();
@@ -38,7 +38,9 @@ class DSString {
         bool isASCII() const;
         bool includes(const DSString &) const;
         
-        int atoi() const; //Get int representation
+        //Get int representation
+        int atoi() const; 
+
         int length() const;
 
         char * c_str() const;

@@ -4,8 +4,6 @@
 #include <iostream>
 #include <cctype>
 
-using namespace std;
-
 //Helper function to allocate memory
 void DSString::init(const char *input)
 {
@@ -128,7 +126,7 @@ std::vector<DSString *> DSString::split(char find) const
 DSString DSString::substring(int start, int end) const
 {
     //Technically the biggest the substring could be is the entire string
-    char *tmp = new char[length()];
+    char *tmp = new char[length()+1];
 
     //Bounds checking
     if(start > end){
@@ -136,7 +134,7 @@ DSString DSString::substring(int start, int end) const
     }
 
     //Protect bounds
-    end = min(end, length());
+    end = std::min(end, length());
 
     for (int i = start; i < end; i++)
     {

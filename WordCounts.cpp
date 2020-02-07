@@ -9,7 +9,7 @@ WordCounts::WordCounts(){
     pos = vector<int>();
     neg = vector<int>();
     words = vector<DSString>();
-    indices = std::map<DSString, int>();
+    indices = map<DSString, int>();
     scores = vector<float>();
 }
 
@@ -19,7 +19,7 @@ void WordCounts::AddWord(DSString word, bool positive){
         pos[index] += positive;
         neg[index] += !positive;
 
-    } catch(std::out_of_range){
+    } catch(out_of_range){
         
         words.push_back(word);
         pos.push_back(positive);
@@ -47,7 +47,7 @@ float WordCounts::GetScore(DSString word){
         int index = indices.at(word);
         return scores[index];
 
-    } catch(std::out_of_range){
+    } catch(out_of_range){
 
         return 0;
 
