@@ -196,7 +196,7 @@ void write_errors(vector<Tweet> tweets, float acc, const DSString &path)
 {
     ofstream output(path.c_str());
 
-    output << setprecision(3) << fixed << endl;
+    output << setprecision(3) << fixed;
     output << acc << endl;
 
     for (int i = 0; i < tweets.size(); i++){

@@ -7,11 +7,11 @@ class Tweet {
     public:
         //No reason we would want to change these later
         //Or why we dont know them at creation
-        Tweet(DSString * text, DSString * user, DSString * id);
+        Tweet(DSString *, DSString *, DSString *);
         ~Tweet();
 
-        Tweet(const Tweet &copy);
-        Tweet & operator=(const Tweet &other);
+        Tweet(const Tweet &);
+        Tweet & operator=(const Tweet &);
 
         DSString * GetText();
         DSString * GetID();
