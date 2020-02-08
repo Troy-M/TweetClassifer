@@ -42,13 +42,14 @@ void WordCounts::GenScores(){
 };
 
 float WordCounts::GetScore(DSString word){
+    //See if we have this word
     try {
 
         int index = indices.at(word);
         return scores[index];
 
     } catch(out_of_range){
-
+        //We dont
         return 0;
 
     }

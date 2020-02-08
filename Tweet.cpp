@@ -28,8 +28,7 @@ Tweet::Tweet(const Tweet &copy)
 
 Tweet &Tweet::operator=(const Tweet &other)
 {
-    if (this != &other)
-    {
+    if (this != &other){
         delete text;
         delete id;
         delete user;

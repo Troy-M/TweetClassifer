@@ -43,8 +43,7 @@ DSString::DSString(const DSString &copy)
 
 DSString &DSString::operator=(const DSString &other)
 {
-    if (this != &other)
-    {
+    if (this != &other) {
         delete[] data;
         init(other.data);
     }
@@ -55,8 +54,7 @@ DSString &DSString::operator=(const char *other)
 {
     //If data is not the same pointer
     //Update pointer
-    if (data != other)
-    {
+    if (data != other) {
         delete[] data;
         init(other);
     }
@@ -107,8 +105,7 @@ std::vector<DSString *> DSString::split(char find) const
 
     int start = 0;
     char *occur = strchr(data, find);
-    while (occur != nullptr)
-    {
+    while (occur != nullptr){
         auto * sub = new DSString(substring(start, occur - data));
         output.push_back(sub);
 
@@ -136,8 +133,7 @@ DSString DSString::substring(int start, int end) const
     //Protect bounds
     end = std::min(end, length());
 
-    for (int i = start; i < end; i++)
-    {
+    for (int i = start; i < end; i++){
         tmp[i - start] = data[i];
     };
 
@@ -151,19 +147,16 @@ DSString DSString::substring(int start, int end) const
 
 void DSString::toLower()
 {
-    for (int i = 0; i < length(); i++)
-    {
+    for (int i = 0; i < length(); i++){
         data[i] = tolower(data[i]);
     }
 }
 
 bool DSString::isASCII() const
 {
-    for (int i = 0; i < length(); i++)
-    {
+    for (int i = 0; i < length(); i++){
         int check = static_cast<int>(data[i]);
-        if (check > 127 || check < 0)
-        {
+        if (check > 127 || check < 0){
             return false;
         }
     }
@@ -177,8 +170,7 @@ void DSString::filter(const DSString& filter)
     //This is the first occur
     char *occur = strstr(data, filter.data);
 
-    if (occur == nullptr)
-    {
+    if (occur == nullptr){
         return;
     }
 
@@ -188,8 +180,7 @@ void DSString::filter(const DSString& filter)
     output = substring(0, start) + substring(end, length());
     occur = strstr(output.data, filter.data);
 
-    while (occur != nullptr)
-    {
+    while (occur != nullptr){
         int start = occur - output.data;
         int end = start + filter.length();
 
