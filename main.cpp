@@ -6,15 +6,17 @@
 
 using namespace std; 
 
-
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
     if(argc == 1){
         return Catch::Session().run( argc, argv );
         //Testing template
     } else {
-        //Command line format
-        //<train data> <train target> <test data> <test target> <output>
-
+        if(argc != 6){
+            cout << "Not enough command line agruments" << endl;
+            cout << "Usage: <train data> <train target> <test data> <test target> <output>" << endl;
+            return -1;
+        }
         DSString train_data = argv[1];
         DSString train_target = argv[2];
 

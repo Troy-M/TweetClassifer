@@ -11,7 +11,7 @@ class WordCounts {
     public:
         WordCounts();
 
-        void AddWord(DSString, bool positive);
+        void AddWord(DSString, bool);
 
         float GetScore(DSString);
         void GenScores();

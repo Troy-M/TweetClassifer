@@ -4,14 +4,13 @@
 #include <iostream>
 #include <cctype>
 
-using namespace std;
-
 //Helper function to allocate memory
 void DSString::init(const char *input)
 {
     //Add room for null termination
     size_t length = strlen(input) + 1;
 
+    size = length-1;
     data = new char[length];
     memcpy(data, input, length);
 }
@@ -19,6 +18,7 @@ void DSString::init(const char *input)
 DSString::DSString()
 {
     data = nullptr;
+    size = 0;
 }
 
 DSString::~DSString()
@@ -43,8 +43,7 @@ DSString::DSString(const DSString &copy)
 
 DSString &DSString::operator=(const DSString &other)
 {
-    if (this != &other)
-    {
+    if (this != &other) {
         delete[] data;
         init(other.data);
     }
@@ -55,8 +54,7 @@ DSString &DSString::operator=(const char *other)
 {
     //If data is not the same pointer
     //Update pointer
-    if (data != other)
-    {
+    if (data != other) {
         delete[] data;
         init(other);
     }
@@ -93,12 +91,12 @@ std::ostream &operator<<(std::ostream &out, const DSString &c)
 
 bool DSString::operator<(const DSString &other) const
 {
-    return strcmp(data, other.data) > 0;
+    return strcmp(data, other.data) < 0;
 };
 
 int DSString::length() const
 {
-    return strlen(data);
+    return size;
 }
 
 std::vector<DSString *> DSString::split(char find) const
@@ -107,9 +105,8 @@ std::vector<DSString *> DSString::split(char find) const
 
     int start = 0;
     char *occur = strchr(data, find);
-    while (occur != nullptr)
-    {
-        DSString * sub = new DSString(substring(start, occur - data));
+    while (occur != nullptr){
+        auto * sub = new DSString(substring(start, occur - data));
         output.push_back(sub);
 
         start = occur - data + 1;
@@ -117,7 +114,7 @@ std::vector<DSString *> DSString::split(char find) const
     }
 
     //Final substring
-    DSString * sub = new DSString(substring(start, strlen(data)));
+    auto * sub = new DSString(substring(start, strlen(data)));
     output.push_back(sub);
 
     return output;
@@ -126,13 +123,17 @@ std::vector<DSString *> DSString::split(char find) const
 DSString DSString::substring(int start, int end) const
 {
     //Technically the biggest the substring could be is the entire string
-    char *tmp = new char[length()];
+    char *tmp = new char[length()+1];
+
+    //Bounds checking
+    if(start > end){
+        return "";
+    }
 
     //Protect bounds
-    end = min(end, length());
+    end = std::min(end, length());
 
-    for (int i = start; i < end; i++)
-    {
+    for (int i = start; i < end; i++){
         tmp[i - start] = data[i];
     };
 
@@ -146,34 +147,30 @@ DSString DSString::substring(int start, int end) const
 
 void DSString::toLower()
 {
-    for (int i = 0; i < length(); i++)
-    {
+    for (int i = 0; i < length(); i++){
         data[i] = tolower(data[i]);
     }
 }
 
 bool DSString::isASCII() const
 {
-    for (int i = 0; i < length() - 1; i++)
-    {
+    for (int i = 0; i < length(); i++){
         int check = static_cast<int>(data[i]);
-        if (check > 127 || check < 0)
-        {
+        if (check > 127 || check < 0){
             return false;
         }
     }
     return true;
 }
 
-void DSString::filter(DSString filter)
+void DSString::filter(const DSString& filter)
 {
     DSString output = "";
 
     //This is the first occur
     char *occur = strstr(data, filter.data);
 
-    if (occur == nullptr)
-    {
+    if (occur == nullptr){
         return;
     }
 
@@ -183,8 +180,7 @@ void DSString::filter(DSString filter)
     output = substring(0, start) + substring(end, length());
     occur = strstr(output.data, filter.data);
 
-    while (occur != nullptr)
-    {
+    while (occur != nullptr){
         int start = occur - output.data;
         int end = start + filter.length();
 
